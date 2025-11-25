@@ -10,6 +10,7 @@ class OrderPage extends StatefulWidget {
 class _OrderPageState extends State<OrderPage> {
   bool deliverSelected = true;
   int quantity = 1;
+  String note = ""; // placeholder for note
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +23,6 @@ class _OrderPageState extends State<OrderPage> {
         elevation: 0,
         backgroundColor: Colors.white,
       ),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -65,8 +65,7 @@ class _OrderPageState extends State<OrderPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text("Jl. Kpg Sutoyo",
-                      style:
-                          TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 3),
                   Text(
                     "Kpg. Sutoyo No. 620, Bilzen, Tanjungbalai.",
@@ -113,12 +112,10 @@ class _OrderPageState extends State<OrderPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text("Caffe Mocha",
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w600)),
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 2),
                         Text("Deep Foam",
-                            style: TextStyle(
-                                color: Colors.grey[600], fontSize: 13)),
+                            style: TextStyle(color: Colors.grey[600], fontSize: 13)),
                       ],
                     ),
                   ),
@@ -181,8 +178,7 @@ class _OrderPageState extends State<OrderPage> {
                 children: [
                   _priceRow("Price", "\$ 4.53"),
                   const SizedBox(height: 6),
-                  _priceRow("Delivery Fee", "\$ 1.0",
-                      oldPrice: "\$ 2.0"),
+                  _priceRow("Delivery Fee", deliverSelected ? "\$ 1.0" : "\$ 0.0", oldPrice: "\$ 2.0"),
                 ],
               ),
             ),
@@ -198,17 +194,14 @@ class _OrderPageState extends State<OrderPage> {
               ),
               child: Row(
                 children: const [
-                  Icon(Icons.account_balance_wallet_outlined,
-                      color: Colors.orange),
+                  Icon(Icons.account_balance_wallet_outlined, color: Colors.orange),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text("Cash/Wallet",
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 15)),
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
                   ),
                   Text("\$ 5.53",
-                      style:
-                          TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                      style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
                   SizedBox(width: 5),
                   Icon(Icons.keyboard_arrow_down)
                 ],
@@ -221,7 +214,9 @@ class _OrderPageState extends State<OrderPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  _showOrderSummary();
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xffC87959),
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -229,8 +224,7 @@ class _OrderPageState extends State<OrderPage> {
                       borderRadius: BorderRadius.circular(14)),
                 ),
                 child: const Text("Order",
-                    style:
-                        TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
               ),
             ),
           ],
@@ -264,18 +258,27 @@ class _OrderPageState extends State<OrderPage> {
   }
 
   Widget _smallButton(IconData icon, String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 16),
-          const SizedBox(width: 5),
-          Text(text, style: const TextStyle(fontSize: 12)),
-        ],
+    return GestureDetector(
+      onTap: () {
+        if (text == "Edit Address") {
+          _showEditAddressDialog();
+        } else if (text == "Add Note") {
+          _showAddNoteDialog();
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 16),
+            const SizedBox(width: 5),
+            Text(text, style: const TextStyle(fontSize: 12)),
+          ],
+        ),
       ),
     );
   }
@@ -299,8 +302,7 @@ class _OrderPageState extends State<OrderPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title,
-            style: const TextStyle(fontSize: 14, color: Colors.black87)),
+        Text(title, style: const TextStyle(fontSize: 14, color: Colors.black87)),
         Row(
           children: [
             if (oldPrice != null)
@@ -313,11 +315,77 @@ class _OrderPageState extends State<OrderPage> {
               ),
             const SizedBox(width: 5),
             Text(price,
-                style: const TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w600)),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
           ],
         ),
       ],
+    );
+  }
+
+  /// ---------------- DIALOGS -----------------
+
+  void _showEditAddressDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Edit Address"),
+        content: const Text("This is a placeholder for editing address."),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close"))
+        ],
+      ),
+    );
+  }
+
+  void _showAddNoteDialog() {
+    TextEditingController controller = TextEditingController(text: note);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Add Note"),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: "Enter your note"),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () {
+                setState(() => note = controller.text);
+                Navigator.pop(context);
+              },
+              child: const Text("Save")),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel")),
+        ],
+      ),
+    );
+  }
+
+  void _showOrderSummary() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Order Summary"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Item: Caffe Mocha x $quantity"),
+            Text("Note: ${note.isEmpty ? 'No note' : note}"),
+            Text("Delivery: ${deliverSelected ? 'Deliver' : 'Pick Up'}"),
+            const SizedBox(height: 10),
+            const Text("Total: \$5.53") // placeholder total
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close"))
+        ],
+      ),
     );
   }
 }
