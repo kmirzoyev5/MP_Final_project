@@ -14,25 +14,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<Map<String, String>> _pages = [
     {
-      'title': 'Delicious Food',
+      'title': 'Premium Coffee',
       'description':
-          'Discover the best foods from over 1,000 restaurants and fast delivery to your doorstep.',
+          'Discover the finest coffee from expert baristas and get it delivered fresh to your doorstep.',
       'image':
-          'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80',
     },
     {
       'title': 'Fast Delivery',
       'description':
-          'Fast food delivery to your home, office wherever you are.',
+          'Hot coffee delivered to your home, office, or wherever you are.',
       'image':
-          'https://images.unsplash.com/photo-1526367790999-0150786686a2?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80',
     },
     {
       'title': 'Live Tracking',
       'description':
-          'Real time tracking of your food on the app once you placed the order.',
+          'Real-time tracking of your coffee order from brew to delivery.',
       'image':
-          'https://images.unsplash.com/photo-1556742046-806e8ac66099?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=800&q=80',
     },
   ];
 
