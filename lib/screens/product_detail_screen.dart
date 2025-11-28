@@ -60,9 +60,7 @@ class ProductDetailScreen extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const CartScreen(),
-                        ),
+                        MaterialPageRoute(builder: (context) => const CartScreen()),
                       );
                     },
                   ),
@@ -90,7 +88,84 @@ class ProductDetailScreen extends StatelessWidget {
               const SizedBox(width: 8),
             ],
           ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          product.name,
+                          style: GoogleFonts.poppins(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '\$${product.price.toStringAsFixed(2)}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Description',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    product.description,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ElevatedButton(
+            onPressed: () {
+              Provider.of<CartProvider>(context, listen: false).addItem(product);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Added to cart')),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: Text(
+              'Add to Cart',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
