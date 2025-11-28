@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pages/order_page.dart';
+import 'pages/order/order_page.dart';
 
 void main() {
   runApp(const MyApp());
