@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'cart_screen.dart'; // It will complain until you create this file in V5, just comment it out for now or create an empty file
-import 'profile_screen.dart'; // Assume this exists
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,17 +16,55 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  // New method to build the specific Home UI
+  Widget _buildHomeContent() {
+    return SafeArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Premium Coffee', 
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)
+                ),
+                Text('Discover Your Perfect Brew', 
+                  style: TextStyle(fontSize: 16, color: Colors.grey[600])
+                ),
+                const SizedBox(height: 24),
+                TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search for coffee...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Expanded(child: Center(child: Text("Grid will go here"))),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Placeholder pages
-    final List<Widget> _pages = [
-      Center(child: Text("Home Content")),
-      Center(child: Text("Cart")),
-      Center(child: Text("Profile")),
+    final List<Widget> pages = [
+      _buildHomeContent(), // Use the new UI here
+      const Center(child: Text("Cart Page")),
+      const Center(child: Text("Profile Page")),
     ];
 
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -41,6 +77,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-  
 }
