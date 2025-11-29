@@ -9,6 +9,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  String _selectedCategory = 'All';
+  final List<String> _categories = ['All', 'Hot Coffee', 'Cold Coffee', 'Espresso', 'Specialty'];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -16,7 +18,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // New method to build the specific Home UI
   Widget _buildHomeContent() {
     return SafeArea(
       child: Column(
@@ -27,29 +28,61 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Premium Coffee', 
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)
-                ),
-                Text('Discover Your Perfect Brew', 
-                  style: TextStyle(fontSize: 16, color: Colors.grey[600])
-                ),
+                const Text('Premium Coffee', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 24),
-                TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search for coffee...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey[200],
+                // Categories
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: _categories.map((category) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: ChoiceChip(
+                          label: Text(category),
+                          selected: _selectedCategory == category,
+                          onSelected: (selected) {
+                            setState(() { _selectedCategory = category; });
+                          },
+                          selectedColor: Colors.brown,
+                          labelStyle: TextStyle(color: _selectedCategory == category ? Colors.white : Colors.black),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
               ],
             ),
           ),
-          const Expanded(child: Center(child: Text("Grid will go here"))),
+          // Product Grid
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.75,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+              ),
+              itemCount: 4,
+              itemBuilder: (context, index) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 10)],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.coffee, size: 50, color: Colors.brown),
+                      Text("Coffee $index", style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const Text("\$4.50"),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -58,12 +91,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
-      _buildHomeContent(), // Use the new UI here
+      _buildHomeContent(),
       const Center(child: Text("Cart Page")),
       const Center(child: Text("Profile Page")),
     ];
 
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       body: pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
