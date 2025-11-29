@@ -30,11 +30,20 @@ class CartScreen extends StatelessWidget {
                       leading: CircleAvatar(backgroundImage: NetworkImage(item.imageUrl)), // Assuming URL is valid
                       title: Text(item.name),
                       subtitle: Text("\$${(item.price * item.quantity).toStringAsFixed(2)}"),
-                      trailing: Text("${item.quantity}x"),
-                    ),
-                  );
-                },
-              ),
+                      trailing: Row(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    IconButton(
+      icon: const Icon(Icons.remove), 
+      onPressed: () => cart.removeSingleItem(item.id),
+    ),
+    Text('${item.quantity}'),
+    IconButton(
+      icon: const Icon(Icons.add), 
+      onPressed: () => cart.incrementItem(item.id),
+    ),
+  ],
+),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),

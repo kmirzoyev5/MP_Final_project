@@ -128,3 +128,51 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
+class CartProvider with ChangeNotifier {
+  final Map<String, CartItem> _items = {};
+
+  Map<String, CartItem> get items => {..._items};
+
+  double get totalAmount {
+    var total = 0.0;
+    _items.forEach((key, item) => total += item.price * item.quantity);
+    return total;
+  }
+
+  void addItem(Product product) {
+    // ... same as before
+    if (_items.containsKey(product.id)) {
+      _items.update(product.id, (existing) => CartItem(
+        id: existing.id, name: existing.name, price: existing.price, imageUrl: existing.imageUrl, quantity: existing.quantity + 1
+      ));
+    } else {
+      _items.putIfAbsent(product.id, () => CartItem(
+        id: product.id, name: product.name, price: product.price, imageUrl: product.imageUrl, quantity: 1
+      ));
+    }
+    notifyListeners();
+  }
+
+  // NEW METHODS ADDED IN THIS VERSION
+  void incrementItem(String productId) {
+    if (_items.containsKey(productId)) {
+      _items.update(productId, (existing) => CartItem(
+        id: existing.id, name: existing.name, price: existing.price, imageUrl: existing.imageUrl, quantity: existing.quantity + 1
+      ));
+      notifyListeners();
+    }
+  }
+
+  void removeSingleItem(String productId) {
+    if (!_items.containsKey(productId)) return;
+    if (_items[productId]!.quantity > 1) {
+      _items.update(productId, (existing) => CartItem(
+        id: existing.id, name: existing.name, price: existing.price, imageUrl: existing.imageUrl, quantity: existing.quantity - 1
+      ));
+    } else {
+      _items.remove(productId);
+    }
+    notifyListeners();
+  }
+}
