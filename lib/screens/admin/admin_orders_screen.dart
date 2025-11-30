@@ -37,18 +37,11 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.shopping_bag_outlined,
-                    size: 80,
-                    color: Colors.grey[400],
-                  ),
+                  Icon(Icons.shopping_bag_outlined, size: 80, color: Colors.grey[400]),
                   const SizedBox(height: 16),
                   Text(
                     'No orders yet',
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      color: Colors.grey[600],
-                    ),
+                    style: GoogleFonts.poppins(fontSize: 18, color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -70,10 +63,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                   childrenPadding: const EdgeInsets.all(16),
                   title: Text(
                     'Order #${order.id.substring(0, 8)}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,10 +71,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                       const SizedBox(height: 4),
                       Text(
                         DateFormat('MMM dd, yyyy - HH:mm').format(order.dateTime),
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
+                        style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
                       ),
                     ],
                   ),
@@ -101,10 +88,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: _getStatusColor(order.status).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
@@ -126,7 +110,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                     ...order.products.map((item) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8),
-                          child: Row(
+                        child: Row(
                           children: [
                             Expanded(
                               child: Text(
@@ -136,45 +120,43 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                             ),
                             Text(
                               'x${item.quantity}',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                              ),
+                              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
                             ),
                             const SizedBox(width: 16),
                             Text(
                               '\$${(item.price * item.quantity).toStringAsFixed(2)}',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
                             ),
                           ],
                         ),
                       );
                     }).toList(),
+
                     const SizedBox(height: 16),
                     const Divider(),
                     const SizedBox(height: 16),
+
                     Row(
                       children: [
                         Expanded(
                           child: Text(
                             'Update Status:',
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
+                            style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14),
                           ),
                         ),
                         DropdownButton<String>(
                           value: order.status,
-                          items: ['Pending', 'Accepted', 'Processing', 'Delivering', 'Delivered', 'Cancelled']
-                              .map((status) => DropdownMenuItem(
-                                    value: status,
-                                    child: Text(status),
-                                  ))
-                              .toList(),
+                          items: [
+                            'Pending',
+                            'Accepted',
+                            'Processing',
+                            'Delivering',
+                            'Delivered',
+                            'Cancelled'
+                          ].map((status) => DropdownMenuItem(
+                                value: status,
+                                child: Text(status),
+                              )).toList(),
                           onChanged: (newStatus) {
                             if (newStatus != null) {
                               _updateOrderStatus(context, order.id, newStatus);
@@ -207,7 +189,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       case 'completed':
         return Colors.green;
       case 'Cancelled':
-      case 'cancelled':
         return Colors.red;
       default:
         return Colors.grey;

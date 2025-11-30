@@ -69,6 +69,7 @@ class LiveOrdersScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      /// ORDER HEADER
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -85,7 +86,8 @@ class LiveOrdersScreen extends StatelessWidget {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(order.status).withOpacity(0.1),
+                              color:
+                                  _getStatusColor(order.status).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
@@ -101,13 +103,17 @@ class LiveOrdersScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        DateFormat('MMM dd, yyyy - HH:mm').format(order.dateTime),
+                        DateFormat('MMM dd, yyyy - HH:mm')
+                            .format(order.dateTime),
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: Colors.grey[600],
                         ),
                       ),
+
                       const Divider(height: 24),
+
+                      /// ORDER ITEMS
                       ...order.products.map((item) {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 8),
@@ -143,21 +149,22 @@ class LiveOrdersScreen extends StatelessWidget {
                           ),
                         );
                       }).toList(),
+
                       const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Total: \$${order.amount.toStringAsFixed(2)}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ),
-                        ],
+
+                      /// TOTAL AMOUNT
+                      Text(
+                        'Total: \$${order.amount.toStringAsFixed(2)}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
                       ),
+
                       const SizedBox(height: 16),
+
+                      /// STATUS DROPDOWN
                       Row(
                         children: [
                           Expanded(
@@ -171,7 +178,14 @@ class LiveOrdersScreen extends StatelessWidget {
                           const SizedBox(width: 16),
                           DropdownButton<String>(
                             value: order.status,
-                            items: ['Pending', 'Accepted', 'Processing', 'Delivering', 'Delivered', 'Cancelled']
+                            items: [
+                              'Pending',
+                              'Accepted',
+                              'Processing',
+                              'Delivering',
+                              'Delivered',
+                              'Cancelled'
+                            ]
                                 .map((status) => DropdownMenuItem(
                                       value: status,
                                       child: Text(status),
@@ -179,7 +193,8 @@ class LiveOrdersScreen extends StatelessWidget {
                                 .toList(),
                             onChanged: (newStatus) {
                               if (newStatus != null) {
-                                _updateOrderStatus(context, order.id, newStatus);
+                                _updateOrderStatus(
+                                    context, order.id, newStatus);
                               }
                             },
                           ),
@@ -216,10 +231,7 @@ class LiveOrdersScreen extends StatelessWidget {
   }
 
   Future<void> _updateOrderStatus(
-    BuildContext context,
-    String orderId,
-    String status,
-  ) async {
+      BuildContext context, String orderId, String status) async {
     try {
       await FirebaseFirestore.instance
           .collection('orders')
@@ -228,13 +240,13 @@ class LiveOrdersScreen extends StatelessWidget {
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Order $status successfully')),
+          SnackBar(content: Text('Order updated to $status')),
         );
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating order: $e')),
+          SnackBar(content: Text('Error: $e')),
         );
       }
     }

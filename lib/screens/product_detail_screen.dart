@@ -6,11 +6,16 @@ import '../providers/cart_provider.dart';
 import '../providers/favorites_provider.dart';
 import 'cart_screen.dart';
 
-class ProductDetailScreen extends StatelessWidget {
+class ProductDetailScreen extends StatefulWidget {
   final Product product;
 
   const ProductDetailScreen({super.key, required this.product});
 
+  @override
+  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,7 +26,7 @@ class ProductDetailScreen extends StatelessWidget {
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
               background: Image.network(
-                product.imageUrl,
+                widget.product.imageUrl,
                 fit: BoxFit.cover,
               ),
             ),
@@ -38,14 +43,14 @@ class ProductDetailScreen extends StatelessWidget {
                   icon: CircleAvatar(
                     backgroundColor: Colors.white,
                     child: Icon(
-                      favorites.isFavorite(product.id)
+                      favorites.isFavorite(widget.product.id)
                           ? Icons.favorite
                           : Icons.favorite_border,
                       color: Colors.red,
                     ),
                   ),
                   onPressed: () {
-                    favorites.toggleFavorite(product.id);
+                    favorites.toggleFavorite(widget.product.id);
                   },
                 ),
               ),
@@ -99,7 +104,7 @@ class ProductDetailScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          product.name,
+                          widget.product.name,
                           style: GoogleFonts.poppins(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -107,7 +112,7 @@ class ProductDetailScreen extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '\$${product.price.toStringAsFixed(2)}',
+                        '\$${widget.product.price.toStringAsFixed(2)}',
                         style: GoogleFonts.poppins(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -126,7 +131,7 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    product.description,
+                    widget.product.description,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: Colors.grey[600],
@@ -144,9 +149,13 @@ class ProductDetailScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: ElevatedButton(
             onPressed: () {
-              Provider.of<CartProvider>(context, listen: false).addItem(product);
+              Provider.of<CartProvider>(context, listen: false).addItem(
+                widget.product,
+              );
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Added to cart')),
+                const SnackBar(
+                  content: Text('Added to cart'),
+                ),
               );
             },
             style: ElevatedButton.styleFrom(
