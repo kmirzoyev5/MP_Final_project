@@ -1,6 +1,6 @@
 {
-    "name": "mp_temp",
-    "short_name": "mp_temp",
+    "name": "food_ordering_app",
+    "short_name": "food_ordering_app",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

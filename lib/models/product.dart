@@ -14,4 +14,25 @@ class Product {
     required this.imageUrl,
     required this.category,
   });
+  
+  factory Product.fromFirestore(Map<String, dynamic> data, String id) {
+    return Product(
+      id: id,
+      name: data['name'] ?? '',
+      description: data['description'] ?? '',
+      price: (data['price'] ?? 0).toDouble(),
+      imageUrl: data['imageUrl'] ?? '',
+      category: data['category'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'description': description,
+      'price': price,
+      'imageUrl': imageUrl,
+      'category': category,
+    };
+  }
 }
