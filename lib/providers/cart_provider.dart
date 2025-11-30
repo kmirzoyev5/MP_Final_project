@@ -1,178 +1,200 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/product_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import '../models/product.dart';
-import '../widgets/product_card.dart';
-import 'cart_screen.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class CartItem {
+  final String id;
+  final String name;
+  final double price;
+  final String imageUrl;
+  final String? size;
+  int quantity;
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
-  String _searchQuery = '';
-  String _selectedCategory = 'All';
-  final List<String> _categories = ['All', 'Hot Coffee', 'Cold Coffee', 'Espresso', 'Specialty'];
-
-  @override
-  void initState() {
-    super.initState();
-    // Fetch mock products on load
-    Future.microtask(() => 
-      Provider.of<ProductProvider>(context, listen: false).fetchProducts()
-    );
-  }
-
-  // LOGIC ADDED HERE
-  List<Product> get _filteredProducts {
-    final allProducts = Provider.of<ProductProvider>(context).products;
-    return allProducts.where((product) {
-      final matchesSearch = product.name.toLowerCase().contains(_searchQuery.toLowerCase());
-      final matchesCategory = _selectedCategory == 'All' || product.category == _selectedCategory;
-      return matchesSearch && matchesCategory;
-    }).toList();
-  }
-
-  void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
-  }
-
-  Widget _buildHomeContent() {
-    return SafeArea(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Premium Coffee', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                TextField(
-                  onChanged: (value) => setState(() => _searchQuery = value), // CONNECT SEARCH
-                  decoration: InputDecoration(
-                    hintText: 'Search...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: _categories.map((category) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: ChoiceChip(
-                          label: Text(category),
-                          selected: _selectedCategory == category,
-                          onSelected: (selected) => setState(() => _selectedCategory = category),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.75,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-              ),
-              itemCount: _filteredProducts.length, // USE FILTERED LIST
-              itemBuilder: (context, index) {
-                return ProductCard(
-                  product: _filteredProducts[index],
-                  onTap: () {
-                    // Navigate to details (placeholder for now)
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final List<Widget> pages = [
-      _buildHomeContent(),
-      const CartScreen(), // Now using real CartScreen
-      const Center(child: Text("Profile")),
-    ];
-
-    return Scaffold(
-      body: pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-      ),
-    );
-  }
+  CartItem({
+    required this.id,
+    required this.name,
+    required this.price,
+    required this.imageUrl,
+    this.size,
+    this.quantity = 1,
+  });
 }
 
 class CartProvider with ChangeNotifier {
   final Map<String, CartItem> _items = {};
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Map<String, CartItem> get items => {..._items};
+  Map<String, CartItem> get items {
+    return {..._items};
+  }
+
+  int get itemCount {
+    return _items.length;
+  }
 
   double get totalAmount {
     var total = 0.0;
-    _items.forEach((key, item) => total += item.price * item.quantity);
+    _items.forEach((key, cartItem) {
+      total += cartItem.price * cartItem.quantity;
+    });
     return total;
   }
 
-  void addItem(Product product) {
-    // ... same as before
-    if (_items.containsKey(product.id)) {
-      _items.update(product.id, (existing) => CartItem(
-        id: existing.id, name: existing.name, price: existing.price, imageUrl: existing.imageUrl, quantity: existing.quantity + 1
-      ));
-    } else {
-      _items.putIfAbsent(product.id, () => CartItem(
-        id: product.id, name: product.name, price: product.price, imageUrl: product.imageUrl, quantity: 1
-      ));
-    }
-    notifyListeners();
-  }
+  Future<void> fetchCart() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
 
-  // NEW METHODS ADDED IN THIS VERSION
-  void incrementItem(String productId) {
-    if (_items.containsKey(productId)) {
-      _items.update(productId, (existing) => CartItem(
-        id: existing.id, name: existing.name, price: existing.price, imageUrl: existing.imageUrl, quantity: existing.quantity + 1
-      ));
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('cart')
+          .get();
+
+      _items.clear();
+      for (var doc in snapshot.docs) {
+        _items.putIfAbsent(
+          doc.id,
+          () => CartItem(
+            id: doc['productId'] ?? doc.id,
+            name: doc['name'],
+            price: doc['price'],
+            imageUrl: doc['imageUrl'],
+            size: doc['size'],
+            quantity: doc['quantity'],
+          ),
+        );
+      }
       notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching cart: $e');
+      }
     }
   }
 
-  void removeSingleItem(String productId) {
-    if (!_items.containsKey(productId)) return;
-    if (_items[productId]!.quantity > 1) {
-      _items.update(productId, (existing) => CartItem(
-        id: existing.id, name: existing.name, price: existing.price, imageUrl: existing.imageUrl, quantity: existing.quantity - 1
-      ));
+  Future<void> _syncToFirestore() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final batch = _firestore.batch();
+      final cartRef = _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('cart');
+
+      // Delete existing cart items (simplification for sync)
+      // In a real app, you'd diff changes, but for now this ensures consistency
+      final snapshot = await cartRef.get();
+      for (var doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      _items.forEach((key, item) {
+        final docRef = cartRef.doc(key);
+        batch.set(docRef, {
+          'productId': item.id,
+          'name': item.name,
+          'price': item.price,
+          'imageUrl': item.imageUrl,
+          'size': item.size,
+          'quantity': item.quantity,
+        });
+      });
+
+      await batch.commit();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error syncing cart: $e');
+      }
+    }
+  }
+
+  void addItem(Product product, {String? size}) {
+    final cartKey = size != null ? '${product.id}_$size' : product.id;
+    
+    if (_items.containsKey(cartKey)) {
+      _items.update(
+        cartKey,
+        (existingCartItem) => CartItem(
+          id: existingCartItem.id,
+          name: existingCartItem.name,
+          price: existingCartItem.price,
+          imageUrl: existingCartItem.imageUrl,
+          size: existingCartItem.size,
+          quantity: existingCartItem.quantity + 1,
+        ),
+      );
     } else {
-      _items.remove(productId);
+      _items.putIfAbsent(
+        cartKey,
+        () => CartItem(
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          imageUrl: product.imageUrl,
+          size: size,
+          quantity: 1,
+        ),
+      );
     }
     notifyListeners();
+    _syncToFirestore();
+  }
+
+  void incrementItem(String cartKey) {
+    if (_items.containsKey(cartKey)) {
+      _items.update(
+        cartKey,
+        (existingCartItem) => CartItem(
+          id: existingCartItem.id,
+          name: existingCartItem.name,
+          price: existingCartItem.price,
+          imageUrl: existingCartItem.imageUrl,
+          size: existingCartItem.size,
+          quantity: existingCartItem.quantity + 1,
+        ),
+      );
+      notifyListeners();
+      _syncToFirestore();
+    }
+  }
+
+  void removeSingleItem(String cartKey) {
+    if (!_items.containsKey(cartKey)) {
+      return;
+    }
+    if (_items[cartKey]!.quantity > 1) {
+      _items.update(
+        cartKey,
+        (existingCartItem) => CartItem(
+          id: existingCartItem.id,
+          name: existingCartItem.name,
+          price: existingCartItem.price,
+          imageUrl: existingCartItem.imageUrl,
+          size: existingCartItem.size,
+          quantity: existingCartItem.quantity - 1,
+        ),
+      );
+    } else {
+      _items.remove(cartKey);
+    }
+    notifyListeners();
+    _syncToFirestore();
+  }
+
+  void removeItem(String cartKey) {
+    _items.remove(cartKey);
+    notifyListeners();
+    _syncToFirestore();
+  }
+
+  void clear() {
+    _items.clear();
+    notifyListeners();
+    _syncToFirestore();
   }
 }
