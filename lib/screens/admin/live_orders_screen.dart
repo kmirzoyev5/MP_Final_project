@@ -19,7 +19,6 @@ class LiveOrdersScreen extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('orders')
-            .where('status', isEqualTo: 'Pending')
             .orderBy('dateTime', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
@@ -39,7 +38,7 @@ class LiveOrdersScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No pending orders',
+                    'No orders found',
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       color: Colors.grey[600],
@@ -80,12 +79,22 @@ class LiveOrdersScreen extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text(
-                            '\$${order.amount.toStringAsFixed(2)}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _getStatusColor(order.status).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              order.status,
+                              style: GoogleFonts.poppins(
+                                color: _getStatusColor(order.status),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                         ],
@@ -105,9 +114,22 @@ class LiveOrdersScreen extends StatelessWidget {
                           child: Row(
                             children: [
                               Expanded(
-                                child: Text(
-                                  '${item.quantity}x ${item.name}',
-                                  style: GoogleFonts.poppins(fontSize: 14),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${item.quantity}x ${item.name}',
+                                      style: GoogleFonts.poppins(fontSize: 14),
+                                    ),
+                                    if (item.size != null)
+                                      Text(
+                                        'Size: ${item.size}',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                               Text(
@@ -123,55 +145,43 @@ class LiveOrdersScreen extends StatelessWidget {
                       }).toList(),
                       const SizedBox(height: 16),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Total: \$${order.amount.toStringAsFixed(2)}',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
                         children: [
                           Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () => _updateOrderStatus(
-                                context,
-                                order.id,
-                                'Accepted',
-                              ),
-                              icon: const Icon(Icons.check_circle),
-                              label: Text(
-                                'Accept',
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                            child: Text(
+                              'Update Status:',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () => _updateOrderStatus(
-                                context,
-                                order.id,
-                                'Declined',
-                              ),
-                              icon: const Icon(Icons.cancel),
-                              label: Text(
-                                'Decline',
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
+                          const SizedBox(width: 16),
+                          DropdownButton<String>(
+                            value: order.status,
+                            items: ['Pending', 'Accepted', 'Processing', 'Delivering', 'Delivered', 'Cancelled']
+                                .map((status) => DropdownMenuItem(
+                                      value: status,
+                                      child: Text(status),
+                                    ))
+                                .toList(),
+                            onChanged: (newStatus) {
+                              if (newStatus != null) {
+                                _updateOrderStatus(context, order.id, newStatus);
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -184,6 +194,25 @@ class LiveOrdersScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'Pending':
+        return Colors.orange;
+      case 'Accepted':
+        return Colors.teal;
+      case 'Processing':
+        return Colors.blue;
+      case 'Delivering':
+        return Colors.purple;
+      case 'Delivered':
+        return Colors.green;
+      case 'Cancelled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
   }
 
   Future<void> _updateOrderStatus(

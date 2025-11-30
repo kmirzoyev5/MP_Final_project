@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../providers/admin_provider.dart';
 
 class AdminOrdersScreen extends StatefulWidget {
@@ -152,6 +153,36 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                         ),
                       );
                     }).toList(),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Update Status:',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        DropdownButton<String>(
+                          value: order.status,
+                          items: ['Pending', 'Accepted', 'Processing', 'Delivering', 'Delivered', 'Cancelled']
+                              .map((status) => DropdownMenuItem(
+                                    value: status,
+                                    child: Text(status),
+                                  ))
+                              .toList(),
+                          onChanged: (newStatus) {
+                            if (newStatus != null) {
+                              _updateOrderStatus(context, order.id, newStatus);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               );
@@ -163,15 +194,46 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   }
 
   Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
+    switch (status) {
+      case 'Pending':
+        return Colors.orange;
+      case 'Accepted':
+        return Colors.teal;
+      case 'Processing':
+        return Colors.blue;
+      case 'Delivering':
+        return Colors.purple;
+      case 'Delivered':
       case 'completed':
         return Colors.green;
-      case 'pending':
-        return Colors.orange;
+      case 'Cancelled':
       case 'cancelled':
         return Colors.red;
       default:
         return Colors.grey;
+    }
+  }
+
+  Future<void> _updateOrderStatus(
+    BuildContext context,
+    String orderId,
+    String status,
+  ) async {
+    try {
+      await Provider.of<AdminProvider>(context, listen: false)
+          .updateOrderStatus(orderId, status);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Order status updated to $status')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating order: $e')),
+        );
+      }
     }
   }
 }
