@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../providers/favorites_provider.dart';
 import '../widgets/product_card.dart';
-import '../pages/product_detail_screen.dart';
+import 'product_detail_screen.dart';
 
 class FavoritesScreen extends StatelessWidget {
   final List<Product> allProducts = [
