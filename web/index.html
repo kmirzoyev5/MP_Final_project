@@ -1,39 +1,426 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
+    <base href="$FLUTTER_BASE_HREF">
+    
+    <meta charset="UTF-8">
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+    <meta name="description" content="Coffee Shop - Find your perfect brew">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- iOS meta tags & icons -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="mp_temp">
+    <link rel="apple-touch-icon" href="icons/Icon-192.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png"/>
+    
+    <title>Coffee Shop - Filter</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f0e8 0%, #e8dcc8 100%);
+            color: #3e2723;
+            padding: 20px;
+        }
 
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  // Flutter 
-  <base href="$FLUTTER_BASE_HREF">
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
 
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+        h1 {
+            font-size: 2.5rem;
+            color: #4e342e;
+            margin-bottom: 10px;
+        }
 
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="mp_temp">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+        .filter-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+        .filter-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #5d4037;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-  <title>mp_temp</title>
-  <link rel="manifest" href="manifest.json">
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #6d4c41;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #d7ccc8;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #fafafa;
+            transition: all 0.3s;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #8d6e63;
+            background: white;
+        }
+
+        .filter-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .filter-tag {
+            padding: 8px 16px;
+            background: #efebe9;
+            border: 2px solid #d7ccc8;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .filter-tag:hover {
+            background: #d7ccc8;
+        }
+
+        .filter-tag.active {
+            background: #6d4c41;
+            color: white;
+            border-color: #6d4c41;
+        }
+
+        .reset-btn {
+            padding: 12px 30px;
+            background: #ff6f00;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+
+        .reset-btn:hover {
+            background: #e65100;
+            transform: translateY(-2px);
+        }
+
+        .results-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #5d4037;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            animation: fadeIn 0.5s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #8d6e63, #6d4c41);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #4e342e;
+        }
+
+        .product-type {
+            font-size: 0.9rem;
+            color: #8d6e63;
+            margin-bottom: 12px;
+        }
+
+        .product-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .product-tag {
+            padding: 4px 10px;
+            background: #efebe9;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #5d4037;
+        }
+
+        .product-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ff6f00;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            font-size: 1.3rem;
+            color: #8d6e63;
+        }
+    </style>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+    <div class="container">
+        <header>
+            <h1>☕ Coffee Shop</h1>
+            <p>Find your perfect brew</p>
+        </header>
+
+        <div class="filter-section">
+            <div class="filter-title">🔍 Filter Products</div>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="type-filter">Coffee Type</label>
+                    <select id="type-filter">
+                        <option value="all">All Types</option>
+                        <option value="espresso">Espresso</option>
+                        <option value="latte">Latte</option>
+                        <option value="cappuccino">Cappuccino</option>
+                        <option value="americano">Americano</option>
+                        <option value="mocha">Mocha</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="price-filter">Max Price ($)</label>
+                    <input type="number" id="price-filter" placeholder="e.g., 10" min="0" step="0.5">
+                </div>
+
+                <div class="filter-group">
+                    <label for="search-filter">Search</label>
+                    <input type="text" id="search-filter" placeholder="Search by name...">
+                </div>
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #6d4c41;">Additional Filters</label>
+                <div class="filter-tags">
+                    <div class="filter-tag" data-filter="hot">🔥 Hot</div>
+                    <div class="filter-tag" data-filter="iced">❄️ Iced</div>
+                    <div class="filter-tag" data-filter="dairy-free">🌱 Dairy Free</div>
+                    <div class="filter-tag" data-filter="sweet">🍰 Sweet</div>
+                </div>
+            </div>
+
+            <button class="reset-btn" onclick="resetFilters()">Reset All Filters</button>
+        </div>
+
+        <div class="results-info" id="results-info"></div>
+        <div class="products-grid" id="products-grid"></div>
+    </div>
+
+    <script>
+        const products = [
+            { id: 1, name: "Classic Espresso", type: "espresso", price: 3.50, tags: ["hot"], emoji: "☕" },
+            { id: 2, name: "Vanilla Latte", type: "latte", price: 5.00, tags: ["hot", "sweet"], emoji: "🥤" },
+            { id: 3, name: "Iced Cappuccino", type: "cappuccino", price: 5.50, tags: ["iced"], emoji: "🧊" },
+            { id: 4, name: "Caramel Macchiato", type: "latte", price: 6.00, tags: ["hot", "sweet"], emoji: "☕" },
+            { id: 5, name: "Americano", type: "americano", price: 4.00, tags: ["hot"], emoji: "☕" },
+            { id: 6, name: "Mocha Frappuccino", type: "mocha", price: 6.50, tags: ["iced", "sweet"], emoji: "🍫" },
+            { id: 7, name: "Almond Milk Latte", type: "latte", price: 5.50, tags: ["hot", "dairy-free"], emoji: "🥤" },
+            { id: 8, name: "Iced Americano", type: "americano", price: 4.50, tags: ["iced"], emoji: "🧊" },
+            { id: 9, name: "Double Espresso", type: "espresso", price: 4.00, tags: ["hot"], emoji: "☕" },
+            { id: 10, name: "Oat Milk Cappuccino", type: "cappuccino", price: 5.75, tags: ["hot", "dairy-free"], emoji: "🥤" },
+            { id: 11, name: "White Chocolate Mocha", type: "mocha", price: 6.75, tags: ["hot", "sweet"], emoji: "🍫" },
+            { id: 12, name: "Iced Vanilla Latte", type: "latte", price: 5.25, tags: ["iced", "sweet"], emoji: "🧊" }
+        ];
+
+        let activeFilters = {
+            type: 'all',
+            maxPrice: null,
+            search: '',
+            tags: []
+        };
+
+        function filterProducts() {
+            let filtered = products;
+
+            if (activeFilters.type !== 'all') {
+                filtered = filtered.filter(p => p.type === activeFilters.type);
+            }
+
+            if (activeFilters.maxPrice) {
+                filtered = filtered.filter(p => p.price <= activeFilters.maxPrice);
+            }
+
+            if (activeFilters.search) {
+                const searchLower = activeFilters.search.toLowerCase();
+                filtered = filtered.filter(p => 
+                    p.name.toLowerCase().includes(searchLower) || 
+                    p.type.toLowerCase().includes(searchLower)
+                );
+            }
+
+            if (activeFilters.tags.length > 0) {
+                filtered = filtered.filter(p => 
+                    activeFilters.tags.every(tag => p.tags.includes(tag))
+                );
+            }
+
+            displayProducts(filtered);
+        }
+
+        function displayProducts(products) {
+            const grid = document.getElementById('products-grid');
+            const info = document.getElementById('results-info');
+            
+            info.textContent = `Showing ${products.length} product${products.length !== 1 ? 's' : ''}`;
+
+            if (products.length === 0) {
+                grid.innerHTML = '<div class="no-results">No products found. Try adjusting your filters.</div>';
+                return;
+            }
+
+            grid.innerHTML = products.map(product => `
+                <div class="product-card">
+                    <div class="product-image">${product.emoji}</div>
+                    <div class="product-info">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-type">${product.type.charAt(0).toUpperCase() + product.type.slice(1)}</div>
+                        <div class="product-tags">
+                            ${product.tags.map(tag => `<span class="product-tag">${tag}</span>`).join('')}
+                        </div>
+                        <div class="product-price">$${product.price.toFixed(2)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('type-filter').addEventListener('change', (e) => {
+            activeFilters.type = e.target.value;
+            filterProducts();
+        });
+
+        document.getElementById('price-filter').addEventListener('input', (e) => {
+            activeFilters.maxPrice = e.target.value ? parseFloat(e.target.value) : null;
+            filterProducts();
+        });
+
+        document.getElementById('search-filter').addEventListener('input', (e) => {
+            activeFilters.search = e.target.value;
+            filterProducts();
+        });
+
+        document.querySelectorAll('.filter-tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                const filter = tag.dataset.filter;
+                tag.classList.toggle('active');
+                
+                if (tag.classList.contains('active')) {
+                    activeFilters.tags.push(filter);
+                } else {
+                    activeFilters.tags = activeFilters.tags.filter(f => f !== filter);
+                }
+                
+                filterProducts();
+            });
+        });
+
+        function resetFilters() {
+            activeFilters = {
+                type: 'all',
+                maxPrice: null,
+                search: '',
+                tags: []
+            };
+            
+            document.getElementById('type-filter').value = 'all';
+            document.getElementById('price-filter').value = '';
+            document.getElementById('search-filter').value = '';
+            document.querySelectorAll('.filter-tag').forEach(tag => {
+                tag.classList.remove('active');
+            });
+            
+            filterProducts();
+        }
+
+        displayProducts(products);
+    </script>
+    
+    <!-- Flutter bootstrap -->
+    <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
